@@ -1,3 +1,5 @@
+/**=========== View ============ **/
+
 var catListView = {
 	
 	init: function(){
@@ -12,12 +14,24 @@ var catListView = {
 		catListView.init();
 		var catItems = []
 		for (var i=0;i<this.cats.length;i++) {
-			catItems.push("<li><button>"+this.cats[i]+"</button></li>");
+			var elemString = "<li><button class='cats'>"+this.cats[i]+"</button></li>";
+			var elem = $(elemString);
+			catItems.push(elemString);
+
+			elemString.on("click", (function(){})())
 		}
 		$(".cats").append(catItems.join(""));
 	}
 }
-	var catData = [{
+var catImageView = {
+	init: {
+
+	}
+}
+/**=========== MODEL ============ **/
+	var model = {
+	currentCat: null,
+	cats: [{
 		name: "purr",
 		image:"cat_picture1.jpg",
 		counter:0
@@ -38,7 +52,34 @@ var catListView = {
 		image:"cat_picture5.jpg",
 		counter:0
 	}]
-var catImageView = function() {
+	}
 
+/**=========== Controller ============ **/
+
+var controller = {
+	addClickListener : function() {
+		$(".cats").each(function(cat) {
+			$(cat).click(function(){
+				var clickedCat = findCat(cat);
+				controller.increaseCounter(clickedCat);
+				controller.showCat(clickedCat);
+			});
+		}) ;
+	},
+	increaseCounter : function(cat) {
+		cat.counter ++;
+	},
+	showCat : function(cat) {
+		console.log(cat);
+	},
+	findCat : function(cat) {
+		var catName = $(cat).text();
+		return catData.filter(function(cat) {
+			return cat.name == catName;
+		});
+
+	}
 }
+
 catListView.render();
+controller.addClickListener();
