@@ -5,11 +5,11 @@ var catListView = {
 	init: function(){
 		//just do it once
 
-		
+		$(".cats").empty();
 		this.render();
 	},
 	render : function() {
-		
+		$(".cats").empty();
 		var cats = controller.getCats();
 		for (var i=0;i<cats.length;i++) {
 			var cat = cats[i];
@@ -19,9 +19,10 @@ var catListView = {
 			
 			elem.on("click", (function(cat){
 				return function() {
-					console.log("cat clicked");
+					
 					controller.setCurrentCat(cat);
 					catImageView.render();
+					adminView.render();
 				};
 			})(cat))
 		}
@@ -42,9 +43,52 @@ var catImageView = {
 		$(".clickCounter").text(cat.counter);
 	}
 }
+
+var adminView = {
+	init: function() {
+		$(".catForm").hide();
+
+		$(".admin").on("click", function(e){
+			e.preventDefault();
+			controller.setAdmin(true);
+			
+		});
+		
+	},
+	toggleForm : function() {
+		var status = model.adminMode;
+		if (status) {
+			$(".catForm").show();
+			this.render();
+		}
+		else $(".catForm").hide();
+	},
+	render : function() {
+		var cat = controller.getCurrentCat();
+		
+		$("#name").val(cat.name);
+		$("#imgURL").val(cat.image);
+		$("#clicks").val(cat.counter);
+
+		$(".cancelButton").on("click", function(e){
+			e.preventDefault();
+			controller.setAdmin(false);
+		});
+		var savedCat = {};
+		$(".saveButton").on("click", function(e){
+			e.preventDefault();
+			savedCat.name = $("#name").val();
+			savedCat.image = $("#imgURL").val();
+			savedCat.counter = $("#clicks").val();
+
+			controller.catSaved(savedCat);
+		});
+	}
+}
 /**=========== MODEL ============ **/
 	var model = {
 	currentCat: null,
+	adminMode : false,
 	cats: [{
 		name: "purr",
 		image:"cat_picture1.jpeg",
@@ -73,7 +117,7 @@ var catImageView = {
 var controller = {
 	init : function() {
 		model.currentCat = model.cats[0];
-
+		adminView.init();
 		catListView.init();
 		catImageView.init();
 	},
@@ -86,28 +130,23 @@ var controller = {
 	getCats : function() {
 		return model.cats;
 	},
-	addClickListener : function() {
-		$(".cats").each(function(cat) {
-			$(cat).click(function(){
-				var clickedCat = findCat(cat);
-				controller.increaseCounter(clickedCat);
-				controller.showCat(clickedCat);
-			});
-		}) ;
-	},
 	increaseCounter : function() {
 		model.currentCat.counter++;
 		catImageView.render();
 	},
-	showCat : function(cat) {
-		console.log(cat);
+	setAdmin : function(status) {
+		model.adminMode = status;
+		adminView.toggleForm();
 	},
-	findCat : function(cat) {
-		var catName = $(cat).text();
-		return catData.filter(function(cat) {
-			return cat.name == catName;
-		});
-
+	catSaved : function(cat) {
+		console.log(cat)
+		var catIndex = model.cats.indexOf(model.currentCat);
+		
+		model.currentCat = cat;
+		model.cats[catIndex] = cat;
+		console.log(model.cats)
+		catImageView.render();
+		catListView.render();
 	}
 }
 
