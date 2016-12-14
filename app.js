@@ -3,29 +3,43 @@
 var catListView = {
 	
 	init: function(){
-		var self = this;
-		this.cats = [];
-		 catData.forEach(function(cat) {
-			self.cats.push(cat.name);
-		});
-		console.log(this.cats)
+		//just do it once
+
+		
+		this.render();
 	},
 	render : function() {
-		catListView.init();
-		var catItems = []
-		for (var i=0;i<this.cats.length;i++) {
-			var elemString = "<li><button class='cats'>"+this.cats[i]+"</button></li>";
+		
+		var cats = controller.getCats();
+		for (var i=0;i<cats.length;i++) {
+			var cat = cats[i];
+			var elemString = "<li><button>"+cat.name+"</button></li>";
 			var elem = $(elemString);
-			catItems.push(elemString);
-
-			elemString.on("click", (function(){})())
+			$(".cats").append(elem);
+			
+			elem.on("click", (function(cat){
+				return function() {
+					console.log("cat clicked");
+					controller.setCurrentCat(cat);
+					catImageView.render();
+				};
+			})(cat))
 		}
-		$(".cats").append(catItems.join(""));
 	}
 }
 var catImageView = {
-	init: {
-
+	init: function(){
+		this.catImage = $(".catPicture");
+		this.catImage.on("click", function(){
+			controller.increaseCounter();
+		});
+		this.render();
+	},
+	render: function() {
+		var cat = controller.getCurrentCat();
+		$(".catName").text(cat.name);
+		$(".catPicture").attr("src", cat.image);
+		$(".clickCounter").text(cat.counter);
 	}
 }
 /**=========== MODEL ============ **/
@@ -33,23 +47,23 @@ var catImageView = {
 	currentCat: null,
 	cats: [{
 		name: "purr",
-		image:"cat_picture1.jpg",
+		image:"cat_picture1.jpeg",
 		counter:0
 	},{
 		name: "meow",
-		image:"cat_picture2.jpg",
+		image:"cat_picture2.jpeg",
 		counter:0
 	},{
 		name: "tigger",
-		image:"cat_picture3.jpg",
+		image:"cat_picture3.jpeg",
 		counter:0
 	},{
 		name: "shadow",
-		image:"cat_picture4.jpg",
+		image:"cat_picture4.jpeg",
 		counter:0
 	},{
 		name: "kitty",
-		image:"cat_picture5.jpg",
+		image:"cat_picture5.jpeg",
 		counter:0
 	}]
 	}
@@ -57,6 +71,21 @@ var catImageView = {
 /**=========== Controller ============ **/
 
 var controller = {
+	init : function() {
+		model.currentCat = model.cats[0];
+
+		catListView.init();
+		catImageView.init();
+	},
+	getCurrentCat : function() {
+		return model.currentCat
+	},
+	setCurrentCat : function(cat) {
+		model.currentCat = cat;
+	},
+	getCats : function() {
+		return model.cats;
+	},
 	addClickListener : function() {
 		$(".cats").each(function(cat) {
 			$(cat).click(function(){
@@ -66,8 +95,9 @@ var controller = {
 			});
 		}) ;
 	},
-	increaseCounter : function(cat) {
-		cat.counter ++;
+	increaseCounter : function() {
+		model.currentCat.counter++;
+		catImageView.render();
 	},
 	showCat : function(cat) {
 		console.log(cat);
@@ -81,5 +111,5 @@ var controller = {
 	}
 }
 
-catListView.render();
-controller.addClickListener();
+
+controller.init();
